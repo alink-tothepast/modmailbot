@@ -64,7 +64,10 @@
       "$comment": "Alias for inboxServerId",
       "type": "string"
     },
-
+    "hoistedRolesOnly": {
+      "type": "boolean",
+      "default":true
+    },
     "prefix": {
       "type": "string",
       "default": "!"

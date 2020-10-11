@@ -6,6 +6,7 @@
  * @property {string} [logChannelId]
  * @property {array} [mainGuildId]
  * @property {string} [mailGuildId]
+ * @property {boolean} [hoistedRolesOnly=false] Allows to define if we want to get the highest hoisted role for mods or not
  * @property {string} [prefix="!"]
  * @property {string} [snippetPrefix="!!"]
  * @property {string} [snippetPrefixAnon="!!!"]
