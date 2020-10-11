@@ -190,8 +190,7 @@ async function getSelfUrl(path = '') {
 function getMainRole(member) {
   const roles = member.roles.map(id => member.guild.roles.get(id));
   roles.sort((a, b) => a.position > b.position ? -1 : 1);
-  // return roles.find(r => r.hoist);
-  return roles[0]; // Because we want the highest role the user has
+  return roles.find(r => r.hoist);
 }
 
 /**
