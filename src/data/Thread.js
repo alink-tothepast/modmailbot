@@ -72,7 +72,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Admins");
+      const mainRole = moderator.roles.find(r => r.name === "Admins");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -82,7 +82,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Light Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Light Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -92,7 +92,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Chaos Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Chaos Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -102,7 +102,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Crystal Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Crystal Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -112,7 +112,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Primal Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Primal Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -122,11 +122,11 @@ class Thread {
     moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Aether Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Aether Datacenter Admin");
     }
     else
     {
-      let mainRole = moderator.roles.find(r => r.name === "Creator.");
+      const mainRole = moderator.roles.find(r => r.name === "Creator.");
     }
      const modInfo = isAnonymous
       ? (moderator.roles.find(r => r.name === "Admins") || 
@@ -168,7 +168,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Admins");
+      const mainRole = moderator.roles.find(r => r.name === "Admins");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -178,7 +178,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Light Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Light Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -188,7 +188,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Chaos Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Chaos Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -198,7 +198,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Crystal Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Crystal Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -208,7 +208,7 @@ class Thread {
     !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Primal Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Primal Datacenter Admin");
     }
     else if (moderator.roles.find(r => r.name === "Admins") &&
     (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
@@ -218,11 +218,11 @@ class Thread {
     moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
     !moderator.roles.find(r => r.name === "Creator.")))
     {
-      let mainRole = moderator.roles.find(r => r.name === "Aether Datacenter Admin");
+      const mainRole = moderator.roles.find(r => r.name === "Aether Datacenter Admin");
     }
     else
     {
-      let mainRole = moderator.roles.find(r => r.name === "Creator.");
+      const mainRole = moderator.roles.find(r => r.name === "Creator.");
     }
     // Mirroring the DM formatting here...
     const modInfo = isAnonymous
