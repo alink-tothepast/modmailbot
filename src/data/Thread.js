@@ -36,17 +36,10 @@ class Thread {
    * @private
    */
   _formatStaffReplyDM(moderator, text, isAnonymous) {
-    // const mainRole = utils.getMainRole(moderator);
+    const mainRole = utils.getMainRole(moderator);
     const modName = (config.useNicknames ? moderator.nick || moderator.user.username : moderator.user.username);
     const modInfo = isAnonymous
-      ? (moderator.roles.find(r => r.name === "Admins") || 
-      moderator.roles.find(r => r.name === "Light Datacenter Admin") || 
-      moderator.roles.find(r => r.name === "Chaos Datacenter Admin") || 
-      moderator.roles.find(r => r.name === "Crystal Datacenter Admin") ||
-      moderator.roles.find(r => r.name === "Primal Datacenter Admin") ||
-      moderator.roles.find(r => r.name === "Aether Datacenter Admin") ||
-      moderator.roles.find(r => r.name === "Creator.")
-      )
+      ? (mainRole ? mainRole.name : 'Moderator')
       : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     return `**${modInfo}:** ${text}`;
@@ -62,82 +55,12 @@ class Thread {
    * @private
    */
   _formatStaffReplyThreadMessage(moderator, text, isAnonymous, messageNumber, timestamp) {
-    // const mainRole = utils.getMainRole(moderator);
+    const mainRole = utils.getMainRole(moderator);
     const modName = (config.useNicknames ? moderator.nick || moderator.user.username : moderator.user.username);
-    if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Admins");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Light Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Chaos Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Crystal Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Primal Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Aether Datacenter Admin");
-    }
-    else
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Creator.");
-    }
-     const modInfo = isAnonymous
-      ? (moderator.roles.find(r => r.name === "Admins") || 
-      moderator.roles.find(r => r.name === "Light Datacenter Admin") || 
-      moderator.roles.find(r => r.name === "Chaos Datacenter Admin") || 
-      moderator.roles.find(r => r.name === "Crystal Datacenter Admin") ||
-      moderator.roles.find(r => r.name === "Primal Datacenter Admin") ||
-      moderator.roles.find(r => r.name === "Aether Datacenter Admin") ||
-      moderator.roles.find(r => r.name === "Creator.")
-      )
+    const modInfo = isAnonymous
+      ? `(Anonymous) (${modName}) ${mainRole ? mainRole.name : 'Moderator'}`
       : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
+
     // TODO: Add \`[${messageNumber}]\` here once !edit and !delete exist
     let result = `**${modInfo}:** ${text}`;
 
@@ -158,75 +81,12 @@ class Thread {
    * @private
    */
   _formatStaffReplyLogMessage(moderator, text, isAnonymous, attachmentLinks = []) {
-    // const mainRole = utils.getMainRole(moderator);
+    const mainRole = utils.getMainRole(moderator);
     const modName = moderator.user.username;
-    if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Admins");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Light Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Chaos Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Crystal Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Primal Datacenter Admin");
-    }
-    else if (moderator.roles.find(r => r.name === "Admins") &&
-    (!moderator.roles.find(r => r.name === "Light Datacenter Admin") && 
-    !moderator.roles.find(r => r.name === "Chaos Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Crystal Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Primal Datacenter Admin") &&
-    moderator.roles.find(r => r.name === "Aether Datacenter Admin") &&
-    !moderator.roles.find(r => r.name === "Creator.")))
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Aether Datacenter Admin");
-    }
-    else
-    {
-      const mainRole = moderator.roles.find(r => r.name === "Creator.");
-    }
+
     // Mirroring the DM formatting here...
     const modInfo = isAnonymous
-      ? (mainRole ? mainRole.name : 'Admins')
+      ? (mainRole ? mainRole.name : 'Moderator')
       : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     let result = `**${modInfo}:** ${text}`;
@@ -405,7 +265,7 @@ class Thread {
    * @returns {Promise<boolean>} Whether we were able to send the reply
    */
   async replyToUser(moderator, text, replyAttachments = [], isAnonymous = false) {
-    const fullAdminsName = `${moderator.user.username}#${moderator.user.discriminator}`;
+    const fullModeratorName = `${moderator.user.username}#${moderator.user.discriminator}`;
 
     // Prepare attachments, if any
     const files = [];
@@ -439,7 +299,7 @@ class Thread {
     const threadMessage = await this._addThreadMessageToDB({
       message_type: THREAD_MESSAGE_TYPE.TO_USER,
       user_id: moderator.id,
-      user_name: fullAdminsName,
+      user_name: fullModeratorName,
       body: logContent,
       is_anonymous: (isAnonymous ? 1 : 0),
       dm_message_id: dmMessage.id
