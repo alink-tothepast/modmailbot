@@ -36,10 +36,17 @@ class Thread {
    * @private
    */
   _formatStaffReplyDM(moderator, text, isAnonymous) {
-    const mainRole = utils.getMainRole(moderator);
+    // const mainRole = utils.getMainRole(moderator);
     const modName = (config.useNicknames ? moderator.nick || moderator.user.username : moderator.user.username);
     const modInfo = isAnonymous
-      ? (mainRole ? mainRole.name : 'Moderator')
+      ? (moderator.roles.find(r => r.name === "Admins") || 
+      moderator.roles.find(r => r.name === "Light Datacenter Admin") || 
+      moderator.roles.find(r => r.name === "Chaos Datacenter Admin") || 
+      moderator.roles.find(r => r.name === "Crystal Datacenter Admin") ||
+      moderator.roles.find(r => r.name === "Primal Datacenter Admin") ||
+      moderator.roles.find(r => r.name === "Aether Datacenter Admin") ||
+      moderator.roles.find(r => r.name === "Creator.")
+      )
       : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     return `**${modInfo}:** ${text}`;
@@ -55,10 +62,17 @@ class Thread {
    * @private
    */
   _formatStaffReplyThreadMessage(moderator, text, isAnonymous, messageNumber, timestamp) {
-    const mainRole = utils.getMainRole(moderator);
+    // const mainRole = utils.getMainRole(moderator);
     const modName = (config.useNicknames ? moderator.nick || moderator.user.username : moderator.user.username);
-    const modInfo = isAnonymous
-      ? `(Anonymous) (${modName}) ${mainRole ? mainRole.name : 'Moderator'}`
+     const modInfo = isAnonymous
+      ? (moderator.roles.find(r => r.name === "Admins") || 
+      moderator.roles.find(r => r.name === "Light Datacenter Admin") || 
+      moderator.roles.find(r => r.name === "Chaos Datacenter Admin") || 
+      moderator.roles.find(r => r.name === "Crystal Datacenter Admin") ||
+      moderator.roles.find(r => r.name === "Primal Datacenter Admin") ||
+      moderator.roles.find(r => r.name === "Aether Datacenter Admin") ||
+      moderator.roles.find(r => r.name === "Creator.")
+      )
       : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     // TODO: Add \`[${messageNumber}]\` here once !edit and !delete exist
@@ -81,12 +95,12 @@ class Thread {
    * @private
    */
   _formatStaffReplyLogMessage(moderator, text, isAnonymous, attachmentLinks = []) {
-    const mainRole = utils.getMainRole(moderator);
+    // const mainRole = utils.getMainRole(moderator);
     const modName = moderator.user.username;
 
     // Mirroring the DM formatting here...
     const modInfo = isAnonymous
-      ? (mainRole ? mainRole.name : 'Moderator')
+      ? (mainRole ? mainRole.name : 'Admins')
       : (mainRole ? `(${mainRole.name}) ${modName}` : modName);
 
     let result = `**${modInfo}:** ${text}`;
@@ -265,7 +279,7 @@ class Thread {
    * @returns {Promise<boolean>} Whether we were able to send the reply
    */
   async replyToUser(moderator, text, replyAttachments = [], isAnonymous = false) {
-    const fullModeratorName = `${moderator.user.username}#${moderator.user.discriminator}`;
+    const fullAdminsName = `${moderator.user.username}#${moderator.user.discriminator}`;
 
     // Prepare attachments, if any
     const files = [];
@@ -299,7 +313,7 @@ class Thread {
     const threadMessage = await this._addThreadMessageToDB({
       message_type: THREAD_MESSAGE_TYPE.TO_USER,
       user_id: moderator.id,
-      user_name: fullModeratorName,
+      user_name: fullAdminsName,
       body: logContent,
       is_anonymous: (isAnonymous ? 1 : 0),
       dm_message_id: dmMessage.id
