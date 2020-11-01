@@ -4,6 +4,7 @@ const config = require("./cfg");
 const ThreadMessage = require("./data/ThreadMessage");
 const {THREAD_MESSAGE_TYPE} = require("./data/constants");
 const moment = require("moment");
+const bot = require("./bot");
 
 /**
  * Function to format the DM that is sent to the user when a staff member replies to them via !reply
@@ -30,8 +31,6 @@ const moment = require("moment");
  * Function to format the inbox channel notification for a staff reply edit
  * @callback FormatStaffReplyEditNotificationThreadMessage
  * @param {ThreadMessage} threadMessage
- * @param {string} newText
- * @param {Eris.Member} moderator Moderator that edited the message
  * @return {Eris.MessageContent} Message content to post in the thread channel
  */
 
@@ -39,8 +38,28 @@ const moment = require("moment");
  * Function to format the inbox channel notification for a staff reply deletion
  * @callback FormatStaffReplyDeletionNotificationThreadMessage
  * @param {ThreadMessage} threadMessage
- * @param {Eris.Member} moderator Moderator that deleted the message
  * @return {Eris.MessageContent} Message content to post in the thread channel
+ */
+
+/**
+ * Function to format a system message in a thread channel
+ * @callback FormatSystemThreadMessage
+ * @param {ThreadMessage} threadMessage
+ * @return {Eris.MessageContent} Message content to post in the thread channel
+ */
+
+/**
+ * Function to format a system message sent to the user in a thread channel
+ * @callback FormatSystemToUserThreadMessage
+ * @param {ThreadMessage} threadMessage
+ * @return {Eris.MessageContent} Message content to post in the thread channel
+ */
+
+/**
+ * Function to format the DM that is sent to the user when the bot sends a system message to the user
+ * @callback FormatSystemToUserDM
+ * @param {ThreadMessage} threadMessage
+ * @return {Eris.MessageContent} Message content to send as a DM
  */
 
 /**
@@ -71,6 +90,9 @@ const moment = require("moment");
  * @property {FormatUserReplyThreadMessage} formatUserReplyThreadMessage
  * @property {FormatStaffReplyEditNotificationThreadMessage} formatStaffReplyEditNotificationThreadMessage
  * @property {FormatStaffReplyDeletionNotificationThreadMessage} formatStaffReplyDeletionNotificationThreadMessage
+ * @property {FormatSystemThreadMessage} formatSystemThreadMessage
+ * @property {FormatSystemToUserThreadMessage} formatSystemToUserThreadMessage
+ * @property {FormatSystemToUserDM} formatSystemToUserDM
  * @property {FormatLog} formatLog
  */
 
@@ -79,19 +101,25 @@ const moment = require("moment");
  */
 const defaultFormatters = {
   formatStaffReplyDM(threadMessage) {
+    const roleName = threadMessage.role_name || config.fallbackRoleName;
     const modInfo = threadMessage.is_anonymous
-      ? (threadMessage.role_name ? threadMessage.role_name : "Moderator")
-      : (threadMessage.role_name ? `(${threadMessage.role_name}) ${threadMessage.user_name}` : threadMessage.user_name);
+      ? roleName
+      : (roleName ? `(${roleName}) ${threadMessage.user_name}` : threadMessage.user_name);
 
-    return `**${modInfo}:** ${threadMessage.body}`;
+    return modInfo
+      ? `**${modInfo}:** ${threadMessage.body}`
+      : threadMessage.body;
   },
 
   formatStaffReplyThreadMessage(threadMessage) {
+    const roleName = threadMessage.role_name || config.fallbackRoleName;
     const modInfo = threadMessage.is_anonymous
-      ? `(Anonymous) (${threadMessage.user_name}) ${threadMessage.role_name || "Moderator"}`
-      : (threadMessage.role_name ? `(${threadMessage.role_name}) ${threadMessage.user_name}` : threadMessage.user_name);
+      ? (roleName ? `(Anonymous) (${threadMessage.user_name}) ${roleName}` : `(Anonymous) (${threadMessage.user_name})`)
+      : (roleName ? `(${roleName}) ${threadMessage.user_name}` : threadMessage.user_name);
 
-    let result = `**${modInfo}:** ${threadMessage.body}`;
+    let result = modInfo
+      ? `**${modInfo}:** ${threadMessage.body}`
+      : threadMessage.body;
 
     if (config.threadTimestamps) {
       const formattedTimestamp = utils.getTimestamp(threadMessage.created_at);
@@ -118,34 +146,68 @@ const defaultFormatters = {
     return result;
   },
 
-  formatStaffReplyEditNotificationThreadMessage(threadMessage, newText, moderator) {
-    let content = `**${moderator.user.username}#${moderator.user.discriminator}** (\`${moderator.id}\`) edited reply \`${threadMessage.message_number}\``;
+ formatStaffReplyEditNotificationThreadMessage(threadMessage) {
+    const originalThreadMessage = threadMessage.getMetadataValue("originalThreadMessage");
+    const newBody = threadMessage.getMetadataValue("newBody");
 
-    if (threadMessage.body.length < 200 && newText.length < 200) {
+    let content = `**${originalThreadMessage.user_name}** (\`${originalThreadMessage.user_id}\`) edited reply \`${originalThreadMessage.message_number}\``;
+
+    if (originalThreadMessage.body.length < 200 && newBody.length < 200) {
       // Show edits of small messages inline
-      content += ` from \`${utils.disableInlineCode(threadMessage.body)}\` to \`${newText}\``;
+      content += ` from \`${utils.disableInlineCode(originalThreadMessage.body)}\` to \`${newBody}\``;
     } else {
       // Show edits of long messages in two code blocks
       content += ":";
-      content += `\n\nBefore:\n\`\`\`${utils.disableCodeBlocks(threadMessage.body)}\`\`\``;
-      content += `\nAfter:\n\`\`\`${utils.disableCodeBlocks(newText)}\`\`\``;
+      content += `\n\nBefore:\n\`\`\`${utils.disableCodeBlocks(originalThreadMessage.body)}\`\`\``;
+      content += `\nAfter:\n\`\`\`${utils.disableCodeBlocks(newBody)}\`\`\``;
     }
 
     return content;
   },
 
-  formatStaffReplyDeletionNotificationThreadMessage(threadMessage, moderator) {
-    let content = `**${moderator.user.username}#${moderator.user.discriminator}** (\`${moderator.id}\`) deleted reply \`${threadMessage.message_number}\``;
+  formatStaffReplyDeletionNotificationThreadMessage(threadMessage) {
+    const originalThreadMessage = threadMessage.getMetadataValue("originalThreadMessage");
+    let content = `**${originalThreadMessage.user_name}** (\`${originalThreadMessage.user_id}\`) deleted reply \`${originalThreadMessage.message_number}\``;
 
-    if (threadMessage.body.length < 200) {
+    if (originalThreadMessage.body.length < 200) {
       // Show the original content of deleted small messages inline
-      content += ` (message content: \`${utils.disableInlineCode(threadMessage.body)}\`)`;
+      content += ` (message content: \`${utils.disableInlineCode(originalThreadMessage.body)}\`)`;
     } else {
       // Show the original content of deleted large messages in a code block
-      content += ":\n```" + utils.disableCodeBlocks(threadMessage.body) + "```";
+      content += ":\n```" + utils.disableCodeBlocks(originalThreadMessage.body) + "```";
     }
 
     return content;
+  },
+
+  formatSystemThreadMessage(threadMessage) {
+    let result = threadMessage.body;
+
+    for (const link of threadMessage.attachments) {
+      result += `\n\n${link}`;
+    }
+
+    return result;
+  },
+
+  formatSystemToUserThreadMessage(threadMessage) {
+    let result = `**⚙️ ${bot.user.username}:** ${threadMessage.body}`;
+
+    for (const link of threadMessage.attachments) {
+      result += `\n\n${link}`;
+    }
+
+    return result;
+  },
+
+  formatSystemToUserDM(threadMessage) {
+    let result = threadMessage.body;
+
+    for (const link of threadMessage.attachments) {
+      result += `\n\n${link}`;
+    }
+
+    return result;
   },
 
   formatLog(thread, threadMessages, opts = {}) {
@@ -204,15 +266,29 @@ const defaultFormatters = {
           }
         }
       } else if (message.message_type === THREAD_MESSAGE_TYPE.SYSTEM) {
-        line += ` [SYSTEM] ${message.body}`;
+        line += ` [BOT] ${message.body}`;
       } else if (message.message_type === THREAD_MESSAGE_TYPE.SYSTEM_TO_USER) {
-        line += ` [SYSTEM TO USER] ${message.body}`;
+        line += ` [BOT TO USER] ${message.body}`;
       } else if (message.message_type === THREAD_MESSAGE_TYPE.CHAT) {
         line += ` [CHAT] [${message.user_name}] ${message.body}`;
       } else if (message.message_type === THREAD_MESSAGE_TYPE.COMMAND) {
         line += ` [COMMAND] [${message.user_name}] ${message.body}`;
+      } else if (message.message_type === THREAD_MESSAGE_TYPE.REPLY_EDITED) {
+        const originalThreadMessage = message.getMetadataValue("originalThreadMessage");
+        line += ` [REPLY EDITED] ${originalThreadMessage.user_name} edited reply ${originalThreadMessage.message_number}:`;
+        line += `\n\nBefore:\n${originalThreadMessage.body}`;
+        line += `\n\nAfter:\n${message.getMetadataValue("newBody")}`;
+      } else if (message.message_type === THREAD_MESSAGE_TYPE.REPLY_DELETED) {
+        const originalThreadMessage = message.getMetadataValue("originalThreadMessage");
+        line += ` [REPLY DELETED] ${originalThreadMessage.user_name} deleted reply ${originalThreadMessage.message_number}:`;
+        line += `\n\n${originalThreadMessage.body}`;
       } else {
         line += ` [${message.user_name}] ${message.body}`;
+      }
+
+      if (message.attachments.length) {
+        line += "\n\n";
+        line += message.attachments.join("\n");
       }
 
       return line;
@@ -242,6 +318,9 @@ const formatters = { ...defaultFormatters };
  * @property {function(FormatUserReplyThreadMessage): void} setUserReplyThreadMessageFormatter
  * @property {function(FormatStaffReplyEditNotificationThreadMessage): void} setStaffReplyEditNotificationThreadMessageFormatter
  * @property {function(FormatStaffReplyDeletionNotificationThreadMessage): void} setStaffReplyDeletionNotificationThreadMessageFormatter
+ * @property {function(FormatSystemThreadMessage): void} setSystemThreadMessageFormatter
+ * @property {function(FormatSystemToUserThreadMessage): void} setSystemToUserThreadMessageFormatter
+ * @property {function(FormatSystemToUserDM): void} setSystemToUserDMFormatter
  * @property {function(FormatLog): void} setLogFormatter
  */
 
@@ -273,6 +352,18 @@ module.exports = {
 
   setStaffReplyDeletionNotificationThreadMessageFormatter(fn) {
     formatters.formatStaffReplyDeletionNotificationThreadMessage = fn;
+  },
+
+  setSystemThreadMessageFormatter(fn) {
+    formatters.formatSystemThreadMessage = fn;
+  },
+
+  setSystemToUserThreadMessageFormatter(fn) {
+    formatters.formatSystemToUserThreadMessage = fn;
+  },
+
+  setSystemToUserDMFormatter(fn) {
+    formatters.formatSystemToUserDM = fn;
   },
 
   setLogFormatter(fn) {

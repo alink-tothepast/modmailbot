@@ -1,6 +1,5 @@
 const threads = require("../data/threads");
 const snippets = require("../data/snippets");
-const config = require("../cfg");
 const utils = require("../utils");
 const { parseArguments } = require("knub-command-manager");
 
@@ -134,5 +133,7 @@ module.exports = ({ bot, knex, config, commands }) => {
     triggers.sort();
 
     utils.postSystemMessageWithFallback(msg.channel, thread, `Available snippets (prefix ${config.snippetPrefix}):\n${triggers.join(", ")}`);
+  }, {
+    aliases: ["s"]
   });
 };

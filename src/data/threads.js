@@ -1,4 +1,4 @@
-const {User, Member} = require("eris");
+const {User, Member, Message} = require("eris");
 
 const transliterate = require("transliteration");
 const moment = require("moment");
@@ -53,9 +53,12 @@ function getHeaderGuildInfo(member) {
 
 /**
  * @typedef CreateNewThreadForUserOpts
- * @property {boolean} quiet If true, doesn't ping mentionRole or reply with responseMessage
- * @property {boolean} ignoreRequirements If true, creates a new thread even if the account doesn't meet requiredAccountAge
- * @property {string} source A string identifying the source of the new thread
+ * @property {boolean} [quiet] If true, doesn't ping mentionRole or reply with responseMessage
+ * @property {boolean} [ignoreRequirements] If true, creates a new thread even if the account doesn't meet requiredAccountAge
+ * @property {boolean} [ignoreHooks] If true, doesn't call beforeNewThread hooks
+ * @property {Message} [message] Original DM message that is trying to start the thread, if there is one
+ * @property {string} [categoryId] Category where to open the thread
+ * @property {string} [source] A string identifying the source of the new thread
  */
 
 /**
@@ -68,6 +71,7 @@ function getHeaderGuildInfo(member) {
 async function createNewThreadForUser(user, opts = {}) {
   const quiet = opts.quiet != null ? opts.quiet : false;
   const ignoreRequirements = opts.ignoreRequirements != null ? opts.ignoreRequirements : false;
+  const ignoreHooks = opts.ignoreHooks != null ? opts.ignoreHooks : false;
 
   const existingThread = await findOpenThreadByUserId(user.id);
   if (existingThread) {
@@ -127,7 +131,7 @@ async function createNewThreadForUser(user, opts = {}) {
   }
 
   // Call any registered beforeNewThreadHooks
-  const hookResult = await callBeforeNewThreadHooks({ user, opts });
+  const hookResult = await callBeforeNewThreadHooks({ user, opts, message: opts.message });
   if (hookResult.cancelled) return;
 
   // Use the user's name+discrim for the thread channel's name
@@ -145,7 +149,7 @@ async function createNewThreadForUser(user, opts = {}) {
   console.log(`[NOTE] Creating new thread channel ${channelName}`);
 
   // Figure out which category we should place the thread channel in
-  let newThreadCategoryId = hookResult.categoryId || null;
+  let newThreadCategoryId = hookResult.categoryId || opts.categoryId || null;
 
   if (! newThreadCategoryId && config.categoryAutomation.newThreadFromServer) {
     // Categories for specific source guilds (in case of multiple main guilds)
@@ -193,17 +197,6 @@ async function createNewThreadForUser(user, opts = {}) {
         content: `${utils.getInboxMention()}New modmail thread (${newThread.user_name})`,
         allowedMentions: utils.getInboxMentionAllowedMentions(),
       });
-    }
-
-    // Send auto-reply to the user
-    if (config.responseMessage) {
-      const responseMessage = utils.readMultilineConfigValue(config.responseMessage);
-
-      try {
-        await newThread.sendSystemMessageToUser(responseMessage);
-      } catch (err) {
-        responseMessageError = err;
-      }
     }
   }
 
@@ -260,8 +253,7 @@ async function createNewThreadForUser(user, opts = {}) {
 
   infoHeader += "\n────────────────";
 
-  await newThread.postSystemMessage({
-    content: infoHeader,
+  await newThread.postSystemMessage(infoHeader, {
     allowedMentions: config.mentionUserInThreadHeader ? { users: [user.id] } : undefined,
   });
 
@@ -270,11 +262,6 @@ async function createNewThreadForUser(user, opts = {}) {
     if (availableUpdate) {
       await newThread.postNonLogMessage(`📣 New bot version available (${availableUpdate})`);
     }
-  }
-
-  // If there were errors sending a response to the user, note that
-  if (responseMessageError) {
-    await newThread.postSystemMessage(`**NOTE:** Could not send auto-response to the user. The error given was: \`${responseMessageError.message}\``);
   }
 
   // Return the thread

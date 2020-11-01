@@ -57,6 +57,12 @@
  * @property {boolean} [createThreadOnMention=false]
  * @property {boolean} [notifyOnMainServerLeave=true]
  * @property {boolean} [notifyOnMainServerJoin=true]
+ * @property {boolean} [allowInlineSnippets=true]
+ * @property {string} [inlineSnippetStart="{{"]
+ * @property {string} [inlineSnippetEnd="}}"]
+ * @property {boolean} [errorOnUnknownInlineSnippet=true]
+ * @property {boolean} [allowChangingDisplayRole=true]
+ * @property {string} [fallbackRoleName=null]
  * @property {string} [logStorage="local"]
  * @property {object} [logOptions]
  * @property {string} logOptions.attachmentDirectory

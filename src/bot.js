@@ -27,6 +27,21 @@ const bot = new Eris.Client(config.token, {
   },
 });
 
+// Eris allegedly handles these internally, so we can ignore them
+const SAFE_TO_IGNORE_ERROR_CODES = [
+  1001, // "CloudFlare WebSocket proxy restarting"
+  1006, // "Connection reset by peer"
+  "ECONNRESET", // Pretty much the same as above
+];
+
+bot.on("error", err => {
+  if (SAFE_TO_IGNORE_ERROR_CODES.includes(err.code)) {
+    return;
+  }
+
+  throw err;
+});
+
 /**
  * @type {Eris.Client}
  */

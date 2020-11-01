@@ -70,6 +70,15 @@ Edit your own previous reply sent with `!reply`.
 Delete your own previous reply sent with `!reply`.  
 `<number>` is the message number shown in front of staff replies in the thread channel.
 
+### `!role`
+View your display role for the thread - the role that is shown in front of your name in your replies
+
+### `!role`
+Reset your display role for the thread to the default
+
+### `!role <role name>`
+Change your display role for the thread to any role you currently have
+
 ### `!loglink`
 Get a link to the open Modmail thread's log.
 
@@ -122,6 +131,15 @@ Unblock the specified user, allowing them to use Modmail again.
 Check if the specified user is blocked.
 
 **Example:** `!is_blocked 106391128718245888`
+
+### `!role`
+(Outside a modmail thread) View your default display role - the role that is shown in front of your name in your replies
+
+### `!role`
+(Outside a modmail thread) Reset your default display role
+
+### `!role <role name>`
+(Outside a modmail thread) Change your default display role to any role you currently have
 
 ### `!version`
 Show the Modmail bot's version.

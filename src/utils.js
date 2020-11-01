@@ -343,6 +343,127 @@ function readMultilineConfigValue(str) {
 
 function noop() {}
 
+// https://discord.com/developers/docs/resources/channel#create-message-params
+const MAX_MESSAGE_CONTENT_LENGTH = 2000;
+
+// https://discord.com/developers/docs/resources/channel#embed-limits
+const MAX_EMBED_CONTENT_LENGTH = 6000;
+
+/**
+ * Checks if the given message content is within Discord's message length limits.
+ *
+ * Based on testing, Discord appears to enforce length limits (at least in the client)
+ * the same way JavaScript does, using the UTF-16 byte count as the number of characters.
+ *
+ * @param {string|Eris.MessageContent} content
+ */
+function messageContentIsWithinMaxLength(content) {
+  if (typeof content === "string") {
+    content = { content };
+  }
+
+  if (content.content && content.content.length > MAX_MESSAGE_CONTENT_LENGTH) {
+    return false;
+  }
+
+  if (content.embed) {
+    let embedContentLength = 0;
+
+    if (content.embed.title) embedContentLength += content.embed.title.length;
+    if (content.embed.description) embedContentLength += content.embed.description.length;
+    if (content.embed.footer && content.embed.footer.text) {
+      embedContentLength += content.embed.footer.text.length;
+    }
+    if (content.embed.author && content.embed.author.name) {
+      embedContentLength += content.embed.author.name.length;
+    }
+
+    if (content.embed.fields) {
+      for (const field of content.embed.fields) {
+        if (field.title) embedContentLength += field.name.length;
+        if (field.description) embedContentLength += field.value.length;
+      }
+    }
+
+    if (embedContentLength > MAX_EMBED_CONTENT_LENGTH) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Splits a string into chunks, preferring to split at a newline
+ * @param {string} str
+ * @param {number} [maxChunkLength=2000]
+ * @returns {string[]}
+ */
+function chunkByLines(str, maxChunkLength = 2000) {
+  if (str.length < maxChunkLength) {
+    return [str];
+  }
+
+  const chunks = [];
+
+  while (str.length) {
+    if (str.length <= maxChunkLength) {
+      chunks.push(str);
+      break;
+    }
+
+    const slice = str.slice(0, maxChunkLength);
+
+    const lastLineBreakIndex = slice.lastIndexOf("\n");
+    if (lastLineBreakIndex === -1) {
+      chunks.push(str.slice(0, maxChunkLength));
+      str = str.slice(maxChunkLength);
+    } else {
+      chunks.push(str.slice(0, lastLineBreakIndex));
+      str = str.slice(lastLineBreakIndex + 1);
+    }
+  }
+
+  return chunks;
+}
+
+/**
+ * Chunks a long message to multiple smaller messages, retaining leading and trailing line breaks, open code blocks, etc.
+ *
+ * Default maxChunkLength is 1990, a bit under the message length limit of 2000, so we have space to add code block
+ * shenanigans to the start/end when needed. Take this into account when choosing a custom maxChunkLength as well.
+ */
+function chunkMessageLines(str, maxChunkLength = 1990) {
+  const chunks = chunkByLines(str, maxChunkLength);
+  let openCodeBlock = false;
+
+  return chunks.map(_chunk => {
+    // If the chunk starts with a newline, add an invisible unicode char so Discord doesn't strip it away
+    if (_chunk[0] === "\n") _chunk = "\u200b" + _chunk;
+    // If the chunk ends with a newline, add an invisible unicode char so Discord doesn't strip it away
+    if (_chunk[_chunk.length - 1] === "\n") _chunk = _chunk + "\u200b";
+    // If the previous chunk had an open code block, open it here again
+    if (openCodeBlock) {
+      openCodeBlock = false;
+      if (_chunk.startsWith("```")) {
+        // Edge case: chunk starts with a code block delimiter, e.g. the previous chunk and this one were split right before the end of a code block
+        // Fix: just strip the code block delimiter away from here, we don't need it anymore
+        _chunk = _chunk.slice(3);
+      } else {
+        _chunk = "```" + _chunk;
+      }
+    }
+    // If the chunk has an open code block, close it and open it again in the next chunk
+    const codeBlockDelimiters = _chunk.match(/```/g);
+    if (codeBlockDelimiters && codeBlockDelimiters.length % 2 !== 0) {
+      _chunk += "```";
+      openCodeBlock = true;
+    }
+
+    return _chunk;
+  });
+}
+
 module.exports = {
   BotError,
 
@@ -383,6 +504,9 @@ module.exports = {
   disableCodeBlocks,
 
   readMultilineConfigValue,
+
+  messageContentIsWithinMaxLength,
+  chunkMessageLines,
 
   noop,
 };
